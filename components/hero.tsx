@@ -16,44 +16,52 @@ export default function Hero() {
   const [isAnimating, setIsAnimating] = useState(false)
 
   useEffect(() => {
-    // Only animate if GSAP is properly loaded and elements exist
-    if (titleRef.current && subtitleRef.current && buttonsRef.current && typeof gsap !== 'undefined') {
-      setIsAnimating(true)
-      
-      // Set initial states
-      gsap.set(titleRef.current, { opacity: 0, y: 100, scale: 0.8 })
-      gsap.set(subtitleRef.current, { opacity: 0, y: 50 })
-      gsap.set(buttonsRef.current, { opacity: 0, y: 30 })
+    // Wait a bit to ensure GSAP is fully loaded
+    const animationTimer = setTimeout(() => {
+      // Only animate if GSAP is properly loaded and elements exist
+      if (titleRef.current && subtitleRef.current && buttonsRef.current && typeof gsap !== 'undefined') {
+        setIsAnimating(true)
+        
+        // Set initial states
+        gsap.set(titleRef.current, { opacity: 0, y: 100, scale: 0.8 })
+        gsap.set(subtitleRef.current, { opacity: 0, y: 50 })
+        gsap.set(buttonsRef.current, { opacity: 0, y: 30 })
 
-      // Fallback: ensure elements are visible after a delay
-      const fallbackTimer = setTimeout(() => {
-        gsap.set([titleRef.current, subtitleRef.current, buttonsRef.current], { opacity: 1, y: 0, scale: 1 })
-        setIsAnimating(false)
-      }, 2000)
-
-      const tl = gsap.timeline({ delay: 0.5 })
-
-      tl.to(titleRef.current, { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out" })
-        .to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.6")
-        .to(buttonsRef.current, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, "-=0.4")
-        .call(() => {
-          clearTimeout(fallbackTimer)
+        // Fallback: ensure elements are visible after a delay
+        const fallbackTimer = setTimeout(() => {
+          gsap.set([titleRef.current, subtitleRef.current, buttonsRef.current], { opacity: 1, y: 0, scale: 1 })
           setIsAnimating(false)
+        }, 3000)
+
+        const tl = gsap.timeline({ delay: 0.5 })
+
+        tl.to(titleRef.current, { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out" })
+          .to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.6")
+          .to(buttonsRef.current, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, "-=0.4")
+          .call(() => {
+            clearTimeout(fallbackTimer)
+            setIsAnimating(false)
+          })
+
+        // Floating animation for the hero section
+        gsap.to(heroRef.current, {
+          y: -20,
+          duration: 3,
+          ease: "power1.inOut",
+          yoyo: true,
+          repeat: -1,
         })
 
-      // Floating animation for the hero section
-      gsap.to(heroRef.current, {
-        y: -20,
-        duration: 3,
-        ease: "power1.inOut",
-        yoyo: true,
-        repeat: -1,
-      })
-
-      return () => {
-        clearTimeout(fallbackTimer)
-        setIsAnimating(false)
+        return () => {
+          clearTimeout(fallbackTimer)
+          setIsAnimating(false)
+        }
       }
+    }, 100) // Small delay to ensure GSAP is ready
+
+    return () => {
+      clearTimeout(animationTimer)
+      setIsAnimating(false)
     }
   }, [])
 
@@ -63,7 +71,8 @@ export default function Hero() {
         <div ref={heroRef} className="space-y-8">
           <h1 
             ref={titleRef} 
-            className={`text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight ${!isAnimating ? 'opacity-100' : ''}`}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight"
+            style={{ opacity: isAnimating ? undefined : 1 }}
           >
             Creative
             <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
@@ -74,7 +83,8 @@ export default function Hero() {
 
           <p 
             ref={subtitleRef} 
-            className={`text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed ${!isAnimating ? 'opacity-100' : ''}`}
+            className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+            style={{ opacity: isAnimating ? undefined : 1 }}
           >
             Crafting beautiful, interactive web experiences with modern technologies. Specializing in React, TypeScript,
             and cutting-edge animations.
@@ -82,7 +92,8 @@ export default function Hero() {
 
           <div 
             ref={buttonsRef} 
-            className={`flex flex-col sm:flex-row gap-4 justify-center items-center ${!isAnimating ? 'opacity-100' : ''}`}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            style={{ opacity: isAnimating ? undefined : 1 }}
           >
             <Button
               size="lg"

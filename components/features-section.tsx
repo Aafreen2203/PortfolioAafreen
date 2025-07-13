@@ -37,54 +37,62 @@ export default function FeaturesSection() {
   useEffect(() => {
     const cards = cardsRef.current
 
-    // Only animate if GSAP is properly loaded and elements exist
-    if (cards.length > 0 && typeof gsap !== 'undefined') {
-      setIsAnimating(true)
-      
-      // Set initial state
-      gsap.set(cards, { opacity: 0, y: 100, scale: 0.8 })
+    // Wait a bit to ensure GSAP is fully loaded
+    const animationTimer = setTimeout(() => {
+      // Only animate if GSAP is properly loaded and elements exist
+      if (cards.length > 0 && typeof gsap !== 'undefined') {
+        setIsAnimating(true)
+        
+        // Set initial state
+        gsap.set(cards, { opacity: 0, y: 100, scale: 0.8 })
 
-      // Fallback: ensure elements are visible after a delay
-      const fallbackTimer = setTimeout(() => {
-        gsap.set(cards, { opacity: 1, y: 0, scale: 1 })
-        setIsAnimating(false)
-      }, 2000)
+        // Fallback: ensure elements are visible after a delay
+        const fallbackTimer = setTimeout(() => {
+          gsap.set(cards, { opacity: 1, y: 0, scale: 1 })
+          setIsAnimating(false)
+        }, 3000)
 
-      gsap.to(cards, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse",
-        },
-        onComplete: () => {
+        gsap.to(cards, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse",
+          },
+          onComplete: () => {
+            clearTimeout(fallbackTimer)
+            setIsAnimating(false)
+          },
+        })
+
+        // Hover animations
+        cards.forEach((card, index) => {
+          if (card) {
+            card.addEventListener("mouseenter", () => {
+              gsap.to(card, { scale: 1.05, duration: 0.3, ease: "power2.out" })
+            })
+            card.addEventListener("mouseleave", () => {
+              gsap.to(card, { scale: 1, duration: 0.3, ease: "power2.out" })
+            })
+          }
+        })
+
+        return () => {
           clearTimeout(fallbackTimer)
           setIsAnimating(false)
-        },
-      })
-
-      // Hover animations
-      cards.forEach((card, index) => {
-        if (card) {
-          card.addEventListener("mouseenter", () => {
-            gsap.to(card, { scale: 1.05, duration: 0.3, ease: "power2.out" })
-          })
-          card.addEventListener("mouseleave", () => {
-            gsap.to(card, { scale: 1, duration: 0.3, ease: "power2.out" })
-          })
         }
-      })
-
-      return () => {
-        clearTimeout(fallbackTimer)
-        setIsAnimating(false)
       }
+    }, 100) // Small delay to ensure GSAP is ready
+
+    return () => {
+      clearTimeout(animationTimer)
+      setIsAnimating(false)
     }
   }, [])
 
@@ -105,7 +113,8 @@ export default function FeaturesSection() {
               ref={(el) => {
                 if (el) cardsRef.current[index] = el
               }}
-              className={`relative group ${!isAnimating ? 'opacity-100' : ''}`}
+              className="relative group"
+              style={{ opacity: isAnimating ? undefined : 1 }}
             >
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 h-full hover:bg-white/10 transition-all duration-300">
                 <div

@@ -41,42 +41,50 @@ export default function ProjectsPreview() {
   useEffect(() => {
     const projects = projectsRef.current
 
-    // Only animate if GSAP is properly loaded and elements exist
-    if (projects.length > 0 && typeof gsap !== 'undefined') {
-      setIsAnimating(true)
-      
-      // Set initial state
-      gsap.set(projects, { opacity: 0, y: 80, rotationX: 45 })
+    // Wait a bit to ensure GSAP is fully loaded
+    const animationTimer = setTimeout(() => {
+      // Only animate if GSAP is properly loaded and elements exist
+      if (projects.length > 0 && typeof gsap !== 'undefined') {
+        setIsAnimating(true)
+        
+        // Set initial state
+        gsap.set(projects, { opacity: 0, y: 80, rotationX: 45 })
 
-      // Fallback: ensure elements are visible after a delay
-      const fallbackTimer = setTimeout(() => {
-        gsap.set(projects, { opacity: 1, y: 0, rotationX: 0 })
-        setIsAnimating(false)
-      }, 2000)
+        // Fallback: ensure elements are visible after a delay
+        const fallbackTimer = setTimeout(() => {
+          gsap.set(projects, { opacity: 1, y: 0, rotationX: 0 })
+          setIsAnimating(false)
+        }, 3000)
 
-      gsap.to(projects, {
-        opacity: 1,
-        y: 0,
-        rotationX: 0,
-        duration: 1,
-        stagger: 0.2,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 70%",
-          end: "bottom 30%",
-          toggleActions: "play none none reverse",
-        },
-        onComplete: () => {
+        gsap.to(projects, {
+          opacity: 1,
+          y: 0,
+          rotationX: 0,
+          duration: 1,
+          stagger: 0.2,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 70%",
+            end: "bottom 30%",
+            toggleActions: "play none none reverse",
+          },
+          onComplete: () => {
+            clearTimeout(fallbackTimer)
+            setIsAnimating(false)
+          },
+        })
+
+        return () => {
           clearTimeout(fallbackTimer)
           setIsAnimating(false)
-        },
-      })
-
-      return () => {
-        clearTimeout(fallbackTimer)
-        setIsAnimating(false)
+        }
       }
+    }, 100) // Small delay to ensure GSAP is ready
+
+    return () => {
+      clearTimeout(animationTimer)
+      setIsAnimating(false)
     }
   }, [])
 
@@ -103,7 +111,8 @@ export default function ProjectsPreview() {
               ref={(el) => {
                 if (el) projectsRef.current[index] = el
               }}
-              className={`group relative ${!isAnimating ? 'opacity-100' : ''}`}
+              className="group relative"
+              style={{ opacity: isAnimating ? undefined : 1 }}
             >
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300">
                 <div className="relative overflow-hidden">
